@@ -31,8 +31,8 @@ class Game:
         self.deck = self.create_deck()
         self.players_amt = len(players)
         self.round = 1
-        # self.num_cards = (42 // self.players_amt) if (42 // self.players_amt) < 13 else 13
-        self.num_cards = 3
+        self.num_cards = (42 // self.players_amt) if (42 // self.players_amt) < 13 else 13
+        # self.num_cards = 3
         self.hands = {player: [] for player in players}
         self.bids = {player: 0 for player in players}
         self.lives = {player: self.num_cards for player in players}

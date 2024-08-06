@@ -52,8 +52,8 @@ if __name__ == "__main__":
             next_address = pede_ip("do próximo node")
     
     #Pega ip local
-    # local_address = pegar_ip_local()
-    local_address = "127.0.0.1"
+    local_address = pegar_ip_local()
+    # local_address = "127.0.0.1"
 
     network = RingNetwork(local_address, next_address)
     
@@ -430,15 +430,3 @@ if __name__ == "__main__":
                     print("O Player", game.players.first_player+1, "ganhou a rodada passada.\n")
                 else:
                     print("Parabéns! Você ganhou a rodada passada!\n")
-
-            
-            #resolver a interface quando acaba o jogo, para mostrar quantas vidas acabou com
-
-            #player 1 : 3 vidas ( faz 3) ( fez 1)
-            #player 2 : 3 vidas ( faz 2) ( fez 2)
-            
-            #player 1 : 1 vidas ( faz 2) ( fez 2)
-            #player 2 : 3 vidas ( faz 2) ( fez 0)
-            
-            #player 1 : 1 vidas ( faz 1) ( fez 0)
-            #player 2 : 1 vidas ( faz 1) ( fez 0)
