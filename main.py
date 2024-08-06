@@ -52,13 +52,14 @@ if __name__ == "__main__":
             next_address = pede_ip("do próximo node")
     
     #Pega ip local
-    local_address = pegar_ip_local()
+    # local_address = pegar_ip_local()
+    local_address = "127.0.0.1"
 
     network = RingNetwork(local_address, next_address)
     
     #Mensagem com tempo atual
     timestamp = time.time()
-    timestamp_msg = network.create_message(0,0,0,0,0,timestamp)
+    timestamp_msg = network.create_message(0,0,0,timestamp)
         
     player = 0
     players = []
@@ -75,10 +76,10 @@ if __name__ == "__main__":
             #Foi o primeiro a abrir
             if (int(received.split(';')[0]) == 0 and float(received.split(';')[3]) == timestamp):
                 network.change_timeout(None)
-                network.send_message(network.create_message(1,0,0,0,0,player+1))
+                network.send_message(network.create_message(1,0,0,player+1))
                 received = network.receive_messages()
                 player_amt = int(received.split(';')[3])
-                network.send_message(network.create_message(2,0,0,0,0,player_amt))
+                network.send_message(network.create_message(2,0,0,player_amt))
                 received = network.receive_messages()
                 break
             #Não foi o primeiro a abrir
@@ -90,7 +91,7 @@ if __name__ == "__main__":
                     network.send_message(received)
                     received = network.receive_messages()
                 player = int(received.split(';')[3]) #Recebeu player
-                network.send_message(network.create_message(1,0,0,0,0,player+1)) #Passa para frente
+                network.send_message(network.create_message(1,0,0,player+1)) #Passa para frente
                 
                 received = network.receive_messages()
                 #Espera receber tipo 2 (player_amt)
@@ -99,7 +100,7 @@ if __name__ == "__main__":
                     received = network.receive_messages()
                         
                 player_amt = int(received.split(';')[3])#Recebeu player_amt
-                network.send_message(network.create_message(2,0,0,0,0,player_amt)) #Passa para frente
+                network.send_message(network.create_message(2,0,0,player_amt)) #Passa para frente
                 received = network.receive_messages()
                 break
             
@@ -121,7 +122,7 @@ if __name__ == "__main__":
             while (len(game.hands[game.players.previous_string()]) > 0): #envia até enviar todas do último player
                 for dest_player in range(player_amt):
                     if (dest_player != game.players.player):
-                        message = network.create_message(3,game.players.dealer,dest_player,0,0,game.hands[game.players.items[dest_player]].pop(0))
+                        message = network.create_message(3,game.players.dealer,dest_player,game.hands[game.players.items[dest_player]].pop(0))
                         network.send_message(message)
                         network.receive_messages()
             print("Sua mão = ", game.hands[game.players.current_string()], "\n")
@@ -141,7 +142,10 @@ if __name__ == "__main__":
             print("Aguardando aposta dos oponentes...")
             
             bid_string = str(game.players.player) + "-" + str(bid) + "-"
-            network.send_message(network.create_message(4,0,0,0,0,bid_string))
+            network.send_message(network.create_message(4,0,0,bid_string))
+            received = network.receive_messages()
+            
+            network.send_message(network.create_message(4,0,-1,received.split(';')[3]))
             received = network.receive_messages()
             
             os.system('clear')
@@ -149,9 +153,14 @@ if __name__ == "__main__":
             
             received_bids = received.split(';')[3].split('-')
             received_bids.pop()
+            
+            print("Apostas:")
+            
             for i in range(0, len(received_bids), 2):
+                print("Player " + str(int(received_bids[i])+1) + " apostou " + received_bids[i+1])
                 game.bids[game.players.items[int(received_bids[i])]] = int(received_bids[i+1])
             
+            print("")
             won_bids = {player: 0 for player in game.players.items}
             
             #Escolhe e manda carta
@@ -175,7 +184,7 @@ if __name__ == "__main__":
                 if (game.players.player != game.players.first_player): #dealer e nao eh primeiro
                     stronger = game.stronger_card(card, best_card)
                     if (stronger == None or stronger == card):
-                        network.send_message(network.create_message(5,game.players.player,0,0,0,card))
+                        network.send_message(network.create_message(5,game.players.player,0,card))
                     else:
                         network.send_message(received)
                     received = network.receive_messages()
@@ -184,7 +193,7 @@ if __name__ == "__main__":
                         received = network.receive_messages()
                 else:# dealer e primeiro
                     print("Aguardando escolha dos oponentes...")
-                    network.send_message(network.create_message(5,0,0,0,0,card))
+                    network.send_message(network.create_message(5,0,0,card))
                     received = network.receive_messages()
                 
                 os.system('clear')
@@ -199,7 +208,7 @@ if __name__ == "__main__":
                 
                 won_bids[game.players.items[game.players.first_player]] += 1
                 
-                network.send_message(network.create_message(6,0,0,0,0,received.split(';')[1]))
+                network.send_message(network.create_message(6,0,0,received.split(';')[1]))
                 received = network.receive_messages()
                 
             #Desconta os pontos
@@ -211,7 +220,7 @@ if __name__ == "__main__":
                 else:
                     result = 0
                 game.lives[player] = result
-                network.send_message(network.create_message(7,game.players.dealer,game.players.items.index(player),0,0,result))
+                network.send_message(network.create_message(7,game.players.dealer,game.players.items.index(player),result))
                 network.receive_messages()  
             
             #Testa se o jogo acabou
@@ -222,14 +231,14 @@ if __name__ == "__main__":
                 values = list(game.lives.values())
                 winner = values.index(max(values))
                 print("O Player", str(winner+1), "ganhou o jogo!")
-                network.send_message(network.create_message(8,0,0,0,0,winner))
+                network.send_message(network.create_message(8,0,0,winner))
                 network.receive_messages()
                 break
             elif (dead == player_amt):
                 os.system('clear')
                 print("Você é o", game.players.current_string(), "| Round:", game.round, "| Vidas:", game.lives[game.players.current_string()], "| Dealer:", game.players.dealer+1, "\n")
                 print("\nEmpate!")
-                network.send_message(network.create_message(8,0,0,0,0,player_amt))
+                network.send_message(network.create_message(8,0,0,player_amt))
                 network.receive_messages()
                 break
             
@@ -241,13 +250,13 @@ if __name__ == "__main__":
                     os.system('clear')
                     print("Você é o", game.players.current_string(), "| Round:", game.round, "| Vidas:", game.lives[game.players.current_string()], "| Dealer:", game.players.dealer+1, "\n")
                     print("Empate!")
-                    network.send_message(network.create_message(8,0,0,0,0,player_amt))
+                    network.send_message(network.create_message(8,0,0,player_amt))
 
                 else:
                     os.system('clear')
                     print("Você é o", game.players.current_string(), "| Round:", game.round, "| Vidas:", game.lives[game.players.current_string()], "| Dealer:", game.players.dealer+1, "\n")
                     print("O Player", str(values.index(max(values))+1), "ganhou o jogo!")
-                    network.send_message(network.create_message(8,0,0,0,0,values.index(max(values))))
+                    network.send_message(network.create_message(8,0,0,values.index(max(values))))
                 network.receive_messages()
                 break
             
@@ -304,15 +313,36 @@ if __name__ == "__main__":
                     bid = int(input("Quantas rodadas você acredita que faz?\n"))
                 except ValueError:
                     print("Valor deve ser um número")
-            print("Aguarde os outros jogarem suas cartas...")
+            
             bid_string = received.split(';')[3] + str(game.players.player) + "-" + str(bid) + "-"
             
-            network.send_message(network.create_message(4,0,0,0,0,bid_string))
+            network.send_message(network.create_message(4,0,0,bid_string))
             received = network.receive_messages()
+            
+            while (int(received.split(';')[0]) != 4 or int(received.split(';')[2]) != -1):
+                network.send_message(received)
+                received = network.receive_messages()
            
             os.system('clear')
             print("Você é o", game.players.current_string(), "| Round:", game.round, "| Vidas:", game.lives[game.players.current_string()], "| Dealer:", game.players.dealer+1, "\n")
+            
+            print("Apostas:")
+            
+            received_bids = received.split(';')[3].split('-')
+            received_bids.pop()
+            
+            for i in range(0, len(received_bids), 2):
+                print("Player " + str(int(received_bids[i])+1) + " apostou " + received_bids[i+1])
+                game.bids[game.players.items[int(received_bids[i])]] = int(received_bids[i+1])
+            
+            print("")
+            
             print("Sua mão = ", game.hands[game.players.current_string()], "\n")
+            
+            print("Aguarde os outros jogarem suas cartas...")
+            
+            network.send_message(received)
+            received = network.receive_messages()
             
             #Escolhe e manda carta
             while (len(game.hands[game.players.current_string()]) > 0):
@@ -333,18 +363,18 @@ if __name__ == "__main__":
                 if (game.players.player != game.players.first_player):
                     stronger = game.stronger_card(card, best_card)
                     if (stronger == None or stronger == card):
-                        network.send_message(network.create_message(5,game.players.player,0,0,0,card))
+                        network.send_message(network.create_message(5,game.players.player,0,card))
                     else:
                         network.send_message(received)
                 else:
-                    network.send_message(network.create_message(5,game.players.player,0,0,0,card))
+                    network.send_message(network.create_message(5,game.players.player,0,card))
                     received = network.receive_messages()
                     best_card = received.split(';')[3]
                     stronger = game.stronger_card(card, best_card)
                     if (stronger == None or stronger == card):
-                        network.send_message(network.create_message(5,game.players.player,-1,0,0,card))
+                        network.send_message(network.create_message(5,game.players.player,-1,card))
                     else:
-                        network.send_message(network.create_message(5,received.split(';')[1],-1,0,0,best_card))
+                        network.send_message(network.create_message(5,received.split(';')[1],-1,best_card))
                     
                 received = network.receive_messages()
                 while(int(received.split(';')[0]) != 6):
