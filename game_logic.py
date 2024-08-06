@@ -36,9 +36,6 @@ class Game:
         self.hands = {player: [] for player in players}
         self.bids = {player: 0 for player in players}
         self.lives = {player: self.num_cards for player in players}
-
-    def clean_hands(self):
-        return {player: [] for player in self.players}
     
     def create_deck(self):
         ranks = ['3', '2', 'A', 'K', 'J', 'Q', '7', '6', '5', '4']
@@ -74,14 +71,5 @@ class Game:
         for player in self.hands:
             self.hands[player] = self.deck[:self.num_cards]
             self.deck = self.deck[self.num_cards:]
-
-    def collect_bids(self):
-        for player in self.hands:
-            # Solicitar apostas dos jogadores
-            pass
-
-    def calculate_scores(self):
-        # Calcular pontuações dos jogadores
-        pass
 
 
