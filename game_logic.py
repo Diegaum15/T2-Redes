@@ -31,8 +31,8 @@ class Game:
         self.deck = self.create_deck()
         self.players_amt = len(players)
         self.round = 1
-        # self.num_cards = (42 // self.players_amt) if (42 // self.players_amt) < 13 else 13
-        self.num_cards = 3
+        self.num_cards = (42 // self.players_amt) if (42 // self.players_amt) < 13 else 13
+        #self.num_cards = 3
         self.hands = {player: [] for player in players}
         self.bids = {player: 0 for player in players}
         self.lives = {player: self.num_cards for player in players}
@@ -43,7 +43,6 @@ class Game:
     def create_deck(self):
         ranks = ['3', '2', 'A', 'K', 'J', 'Q', '7', '6', '5', '4']
         suits = ['paus', 'copas', 'espadas', 'ouros']
-        #return [(rank, suit) for rank in ranks for suit in suits]
         deck = [f"{rank} de {suit}" for rank in ranks for suit in suits]
         deck.extend(["Coringa", "Coringa"])
         return deck

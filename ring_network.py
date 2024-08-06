@@ -18,7 +18,7 @@ class RingNetwork:
     #type 0 - manda timestamp; type 1 - manda player;  type 2 - manda player_amt; type 3 - manda cartas; type 4 - manda aposta
     #type 5 - manda carta jogada; type 6 - jogador que ganhou a rodada ;type 7 - manda pontos perdidos; type 8 - manda quem ganhou
     def create_message(self, msg_type, origin, dest, message_id, ack, content):
-        message = f"START;{msg_type};{origin};{dest};{message_id};{ack};{content}"
+        message = f"{msg_type};{origin};{dest};{content}"
         checksum = calculate_checksum(message)
         return f"{message};{checksum}"
 
